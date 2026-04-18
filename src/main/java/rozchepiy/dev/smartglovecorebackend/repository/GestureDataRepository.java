@@ -8,6 +8,6 @@ import rozchepiy.dev.smartglovecorebackend.model.GestureModel;
 import java.util.List;
 
 @Repository
-public interface GestureDataRepository extends MongoRepository<GestureModel,String> {
+public interface GestureDataRepository extends MongoRepository<GestureData,String> {
     List<GestureData> findAllByModelId(String modelId);
 }
