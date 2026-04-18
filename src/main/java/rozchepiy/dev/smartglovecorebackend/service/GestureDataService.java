@@ -10,7 +10,10 @@ import rozchepiy.dev.smartglovecorebackend.model.GestureData;
 import rozchepiy.dev.smartglovecorebackend.repository.GestureDataRepository;
 import rozchepiy.dev.smartglovecorebackend.repository.GestureModelRepository;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -41,5 +44,18 @@ public class GestureDataService {
 
     public List<GestureData> getAllByModelId(String modelId) {
         return gestureDataRepository.findAllByModelId(modelId);
+    }
+
+    public Map<String, List<List<Double>>> getFormattedTrainingData(String modelId) {
+
+        List<GestureData> allData = gestureDataRepository.findAllByModelId(modelId);
+        Map<String, List<List<Double>>> formattedData = new HashMap<>();
+
+        for (GestureData data : allData) {
+            formattedData.computeIfAbsent(data.getLabel(), k -> new ArrayList<>())
+                    .addAll(data.getRawData());
+        }
+
+        return formattedData;
     }
 }

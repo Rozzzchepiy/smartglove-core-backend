@@ -9,6 +9,9 @@ import rozchepiy.dev.smartglovecorebackend.dto.request.SaveGestureRequest;
 import rozchepiy.dev.smartglovecorebackend.model.GestureData;
 import rozchepiy.dev.smartglovecorebackend.service.GestureDataService;
 
+import java.util.List;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/v1/models/{modelId}/gestures")
 @RequiredArgsConstructor
@@ -23,5 +26,10 @@ public class GestureDataController {
 
         GestureData savedData = gestureDataService.saveGestureData(modelId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedData);
+    }
+    @GetMapping("/internal/{modelId}/data")
+    public ResponseEntity<Map<String, List<List<Double>>>> getTrainingDataForAi(@PathVariable String modelId) {
+        Map<String, List<List<Double>>> result = gestureDataService.getFormattedTrainingData(modelId);
+        return ResponseEntity.ok(result);
     }
 }
