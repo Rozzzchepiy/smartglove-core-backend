@@ -27,7 +27,7 @@ public class GestureDataController {
         GestureData savedData = gestureDataService.saveGestureData(modelId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedData);
     }
-    @GetMapping("/internal/{modelId}/data")
+    @GetMapping("/internal/data")
     public ResponseEntity<Map<String, List<List<Double>>>> getTrainingDataForAi(@PathVariable String modelId) {
         Map<String, List<List<Double>>> result = gestureDataService.getFormattedTrainingData(modelId);
         return ResponseEntity.ok(result);

@@ -12,8 +12,8 @@ public class RabbitMQConfig {
     public static final String EXCHANGE_NAME = "smartglove.exchange";
     public static final String TRAIN_QUEUE = "train_tasks_queue";
     public static final String TRAIN_ROUTING_KEY = "train.task";
+    public static final String TRAIN_RESULTS_QUEUE = "train_results_queue";
 
-    // Створюємо чергу
     @Bean
     public Queue trainQueue() {
         return new Queue(TRAIN_QUEUE, true);
@@ -32,5 +32,9 @@ public class RabbitMQConfig {
     @Bean
     public MessageConverter jsonMessageConverter() {
         return new JacksonJsonMessageConverter();
+    }
+    @Bean
+    public Queue trainResultsQueue() {
+        return new Queue(TRAIN_RESULTS_QUEUE, true);
     }
 }

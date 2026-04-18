@@ -53,4 +53,8 @@ public class GestureModelService {
 
         rabbitMQProducer.sendTrainTask(message);
     }
+    public GestureModel getModelById(String id) {
+        return gestureModelRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Модель не знайдена"));
+    }
 }

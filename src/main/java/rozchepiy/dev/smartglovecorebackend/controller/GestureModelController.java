@@ -35,4 +35,10 @@ public class GestureModelController {
         gestureModelService.startTraining(modelId);
         return ResponseEntity.status(HttpStatus.ACCEPTED).build();
     }
+
+    @GetMapping("/{modelId}")
+    public ResponseEntity<GestureModel> getModel(@PathVariable String modelId) {
+        GestureModel model = gestureModelService.getModelById(modelId);
+        return ResponseEntity.ok(model);
+    }
 }
