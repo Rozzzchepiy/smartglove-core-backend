@@ -1,0 +1,27 @@
+package rozchepiy.dev.smartglovecorebackend.controller;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import rozchepiy.dev.smartglovecorebackend.dto.request.SaveGestureRequest;
+import rozchepiy.dev.smartglovecorebackend.model.GestureData;
+import rozchepiy.dev.smartglovecorebackend.service.GestureDataService;
+
+@RestController
+@RequestMapping("/api/v1/models/{modelId}/gestures")
+@RequiredArgsConstructor
+public class GestureDataController {
+
+    private final GestureDataService gestureDataService;
+
+    @PostMapping
+    public ResponseEntity<GestureData> addGestureToModel(
+            @PathVariable String modelId,
+            @Valid @RequestBody SaveGestureRequest request) {
+
+        GestureData savedData = gestureDataService.saveGestureData(modelId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedData);
+    }
+}
