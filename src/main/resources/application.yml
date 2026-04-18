@@ -1,0 +1,20 @@
+spring:
+  application:
+    name: smartglove-backend
+
+  data:
+    mongodb:
+      uri: mongodb://admin:secretpassword@localhost:27017/smartglove?authSource=admin
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+# Налаштування для MinIO (наші кастомні проперті)
+minio:
+  url: http://localhost:9000
+  access-key: minioadmin
+  secret-key: minioadminpassword
+  bucket-name: gesture-models

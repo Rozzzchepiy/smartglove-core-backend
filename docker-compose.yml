@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: smartglove-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: secretpassword
+    volumes:
+      - mongo-data:/data/db
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: smartglove-rabbitmq
+    ports:
+      - "5672:5672"   # Порт для роботи Spring
+      - "15672:15672" # Веб-інтерфейс (логін/пароль: guest/guest)
+    restart: unless-stopped
+
+  minio:
+    image: minio/minio
+    container_name: smartglove-minio
+    ports:
+      - "9000:9000"   # Порт для API
+      - "9001:9001"   # Веб-інтерфейс консолі
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadminpassword
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio-data:/data
+    restart: unless-stopped
+
+volumes:
+  mongo-data:
+  minio-data:
