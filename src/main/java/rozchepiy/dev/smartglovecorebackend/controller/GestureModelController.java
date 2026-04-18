@@ -29,4 +29,10 @@ public class GestureModelController {
         GestureModel createdModel = gestureModelService.createModel(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdModel);
     }
+
+    @PostMapping("/{modelId}/train")
+    public ResponseEntity<Void> startTraining(@PathVariable String modelId) {
+        gestureModelService.startTraining(modelId);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).build();
+    }
 }
