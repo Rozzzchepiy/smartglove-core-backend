@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/models/{modelId}/gestures")
+@RequestMapping("/api/models/{modelId}/gestures")
 @RequiredArgsConstructor
 public class GestureDataController {
 

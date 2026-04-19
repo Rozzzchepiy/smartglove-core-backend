@@ -13,7 +13,7 @@ import java.security.Principal;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/models")
+@RequestMapping("/api/models")
 @RequiredArgsConstructor
 public class GestureModelController {
 

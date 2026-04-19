@@ -12,7 +12,7 @@ import rozchepiy.dev.smartglovecorebackend.service.GestureModelService;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/v1/predict")
+@RequestMapping("/api/predict")
 @RequiredArgsConstructor
 public class PredictController {
 
