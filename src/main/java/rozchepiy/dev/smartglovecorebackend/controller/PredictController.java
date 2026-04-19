@@ -2,11 +2,10 @@ package rozchepiy.dev.smartglovecorebackend.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import rozchepiy.dev.smartglovecorebackend.dto.external.AiInitRequest;
+import rozchepiy.dev.smartglovecorebackend.dto.external.AiPredictResponse;
+import rozchepiy.dev.smartglovecorebackend.dto.request.PredictRequest;
 import rozchepiy.dev.smartglovecorebackend.service.AiClientService;
 import rozchepiy.dev.smartglovecorebackend.service.GestureModelService;
 
@@ -31,5 +30,12 @@ public class PredictController {
                 "status", "SUCCESS",
                 "message", "Модель успішно завантажена в пам'ять ШІ-сервера. Можна починати розпізнавання."
         ));
+    }
+
+    @PostMapping("/gesture")
+    public ResponseEntity<AiPredictResponse> predictGesture(@RequestBody PredictRequest request) {
+        gestureModelService.getModelById(request.getModelId());
+        AiPredictResponse result = aiClientService.predictGestureOnAiServer(request);
+        return ResponseEntity.ok(result);
     }
 }
