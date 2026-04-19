@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import rozchepiy.dev.smartglovecorebackend.dto.external.AiInitRequest;
 import rozchepiy.dev.smartglovecorebackend.dto.message.TrainTaskMessage;
 import rozchepiy.dev.smartglovecorebackend.dto.request.CreateModelRequest;
 import rozchepiy.dev.smartglovecorebackend.model.GestureModel;
@@ -18,6 +19,7 @@ import java.util.UUID;
 public class GestureModelService {
     private final GestureModelRepository gestureModelRepository;
     private final RabbitMQProducer rabbitMQProducer;
+    private final MinioService minioService;
 
 
     public GestureModel createModel(CreateModelRequest createModelRequest){
@@ -56,5 +58,24 @@ public class GestureModelService {
     public GestureModel getModelById(String id) {
         return gestureModelRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Модель не знайдена"));
+    }
+
+    public AiInitRequest prepareInitRequest(String modelId) {
+        GestureModel model = getModelById(modelId);
+
+        if (model.getStatus() != ModelStatus.READY) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Модель ще не готова (статус: " + model.getStatus() + ")");
+        }
+
+        return AiInitRequest.builder()
+                .modelId(model.getId())
+                .modelUrl(minioService.generatePresignedUrl(model.getS3PathToKeras()))
+                .scalerUrl(minioService.generatePresignedUrl(model.getS3PathToScaler()))
+                .labelsUrl(minioService.generatePresignedUrl(model.getS3PathToLabels()))
+                .build();
+    }
+
+    public List<GestureModel> getAllModels() {
+        return gestureModelRepository.findAll();
     }
 }

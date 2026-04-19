@@ -41,4 +41,11 @@ public class GestureModelController {
         GestureModel model = gestureModelService.getModelById(modelId);
         return ResponseEntity.ok(model);
     }
+
+    @GetMapping
+    public ResponseEntity<List<GestureModel>> getAllModels() {
+        List<GestureModel> models = gestureModelService.getAllModels();
+        return ResponseEntity.ok(models);
+    }
+
 }
