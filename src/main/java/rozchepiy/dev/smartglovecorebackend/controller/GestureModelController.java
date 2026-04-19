@@ -9,6 +9,7 @@ import rozchepiy.dev.smartglovecorebackend.dto.request.CreateModelRequest;
 import rozchepiy.dev.smartglovecorebackend.model.GestureModel;
 import rozchepiy.dev.smartglovecorebackend.service.GestureModelService;
 
+import java.security.Principal;
 import java.util.List;
 
 @RestController
@@ -18,15 +19,15 @@ public class GestureModelController {
 
     private final GestureModelService gestureModelService;
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<GestureModel>> getUserModels(@PathVariable String userId) {
-        List<GestureModel> models = gestureModelService.getUserModels(userId);
+    @GetMapping
+    public ResponseEntity<List<GestureModel>> getUserModels(Principal principal) {
+        List<GestureModel> models = gestureModelService.getUserModels(principal.getName());
         return ResponseEntity.ok(models);
     }
 
     @PostMapping
-    public ResponseEntity<GestureModel> createModel(@Valid @RequestBody CreateModelRequest request) {
-        GestureModel createdModel = gestureModelService.createModel(request);
+    public ResponseEntity<GestureModel> createModel(@Valid @RequestBody CreateModelRequest request, Principal principal) {
+        GestureModel createdModel = gestureModelService.createModel(request.getName(), principal.getName());
         return ResponseEntity.status(HttpStatus.CREATED).body(createdModel);
     }
 
@@ -42,7 +43,7 @@ public class GestureModelController {
         return ResponseEntity.ok(model);
     }
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<GestureModel>> getAllModels() {
         List<GestureModel> models = gestureModelService.getAllModels();
         return ResponseEntity.ok(models);

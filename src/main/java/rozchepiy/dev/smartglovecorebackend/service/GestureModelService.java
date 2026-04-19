@@ -8,8 +8,10 @@ import rozchepiy.dev.smartglovecorebackend.dto.external.AiInitRequest;
 import rozchepiy.dev.smartglovecorebackend.dto.message.TrainTaskMessage;
 import rozchepiy.dev.smartglovecorebackend.dto.request.CreateModelRequest;
 import rozchepiy.dev.smartglovecorebackend.model.GestureModel;
+import rozchepiy.dev.smartglovecorebackend.model.User;
 import rozchepiy.dev.smartglovecorebackend.model.enums.ModelStatus;
 import rozchepiy.dev.smartglovecorebackend.repository.GestureModelRepository;
+import rozchepiy.dev.smartglovecorebackend.repository.UserRepository;
 
 import java.util.List;
 import java.util.UUID;
@@ -19,24 +21,28 @@ import java.util.UUID;
 public class GestureModelService {
     private final GestureModelRepository gestureModelRepository;
     private final RabbitMQProducer rabbitMQProducer;
+    private final UserRepository userRepository;
     private final MinioService minioService;
 
 
-    public GestureModel createModel(CreateModelRequest createModelRequest){
-        GestureModel gestureModel = GestureModel.builder()
-                .userId(createModelRequest.getUserId())
-                .name(createModelRequest.getName())
-                .isDefault(false)
+    public GestureModel createModel(String modelName, String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("Користувача не знайдено"));
+
+        GestureModel newModel = GestureModel.builder()
+                .name(modelName)
+                .userId(user.getId())
                 .status(ModelStatus.CREATED)
+                .isDefault(false)
                 .build();
-        return gestureModelRepository.save(gestureModel);
+
+        return gestureModelRepository.save(newModel);
     }
 
-    public List<GestureModel> getUserModels(String userId) {
-        List<GestureModel> defaultModels = gestureModelRepository.findAllByIsDefaultTrue();
-        List<GestureModel> userModels = gestureModelRepository.findAllByUserId(userId);
-        defaultModels.addAll(userModels);
-        return defaultModels;
+    public List<GestureModel> getUserModels(String userEmail) {
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("Користувача не знайдено"));
+        return gestureModelRepository.findAllByUserId(user.getId());
     }
 
     public void startTraining(String modelId) {
