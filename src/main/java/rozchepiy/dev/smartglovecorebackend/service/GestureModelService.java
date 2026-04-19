@@ -25,13 +25,14 @@ public class GestureModelService {
     private final MinioService minioService;
 
 
-    public GestureModel createModel(String modelName, String userEmail) {
+    public GestureModel createModel(String modelName, String userEmail, boolean includesDefault) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("Користувача не знайдено"));
 
         GestureModel newModel = GestureModel.builder()
                 .name(modelName)
                 .userId(user.getId())
+                .includesDefaultGestures(includesDefault)
                 .status(ModelStatus.CREATED)
                 .isDefault(false)
                 .build();

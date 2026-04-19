@@ -27,7 +27,7 @@ public class GestureModelController {
 
     @PostMapping
     public ResponseEntity<GestureModel> createModel(@Valid @RequestBody CreateModelRequest request, Principal principal) {
-        GestureModel createdModel = gestureModelService.createModel(request.getName(), principal.getName());
+        GestureModel createdModel = gestureModelService.createModel(request.getName(), principal.getName(), request.isBasedOnDefault());
         return ResponseEntity.status(HttpStatus.CREATED).body(createdModel);
     }
 

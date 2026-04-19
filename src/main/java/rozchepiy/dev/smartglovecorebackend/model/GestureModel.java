@@ -19,6 +19,8 @@ public class GestureModel {
 
     private String userId;
     private String name;
+    private boolean includesDefaultGestures;
+
     private boolean isDefault;
 
     private String s3PathToKeras;

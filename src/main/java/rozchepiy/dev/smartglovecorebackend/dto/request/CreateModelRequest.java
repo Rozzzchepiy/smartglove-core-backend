@@ -7,5 +7,5 @@ import lombok.Data;
 public class CreateModelRequest {
     @NotBlank(message = "Назва моделі не може бути порожньою")
     private String name;
-
+    private boolean basedOnDefault;
 }
