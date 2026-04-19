@@ -17,3 +17,7 @@ minio:
   access-key: minioadmin
   secret-key: minioadminpassword
   bucket-name: gesture-models
+
+ai:
+  server:
+    url: http://localhost:8000
