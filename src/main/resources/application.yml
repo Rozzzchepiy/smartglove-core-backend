@@ -17,6 +17,8 @@ minio:
   access-key: minioadmin
   secret-key: minioadminpassword
   bucket-name: gesture-models
+  bucket:
+    name: gesture-models
 
 ai:
   server:
