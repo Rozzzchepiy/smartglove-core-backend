@@ -6,9 +6,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import rozchepiy.dev.smartglovecorebackend.dto.external.AiInitRequest;
 import rozchepiy.dev.smartglovecorebackend.dto.external.AiPredictResponse;
 import rozchepiy.dev.smartglovecorebackend.dto.request.PredictRequest;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -20,27 +22,43 @@ public class AiClientService {
     @Value("${ai.server.url}")
     private String aiServerUrl;
 
-    public boolean initModelOnAiServer(AiInitRequest request) {
-        String url = aiServerUrl + "/init";
+    public boolean initModelOnAiServer(String modelId) {
+        String url = aiServerUrl + "/models/" + modelId;
 
-        log.info("Відправка запиту на ініціалізацію моделі до AI сервера: {}", url);
+        log.info("Запит на ініціалізацію моделі {} на AI сервері: {}", modelId, url);
+
+        Map<String, String> requestBody = new HashMap<>();
+        requestBody.put("modelId", modelId);
 
         try {
-            ResponseEntity<Void> response = restTemplate.postForEntity(url, request, Void.class);
+            ResponseEntity<Void> response = restTemplate.postForEntity(url, requestBody, Void.class);
 
             if (response.getStatusCode().is2xxSuccessful()) {
-                log.info("AI сервер успішно завантажив модель!");
+                log.info("AI сервер успішно ініціалізував модель {}", modelId);
                 return true;
             }
             return false;
         } catch (Exception e) {
-            log.error("Помилка зв'язку з AI сервером: {}", e.getMessage());
-            throw new RuntimeException("AI сервер недоступний або не зміг завантажити модель", e);
+            log.error("Помилка ініціалізації на AI сервері: {}", e.getMessage());
+            return false;
         }
     }
+
+    public void deleteModelFromAiServer(String modelId) {
+        String url = aiServerUrl + "/models/" + modelId;
+
+        log.info("Запит на видалення моделі {} з пам'яті AI сервера: {}", modelId, url);
+
+        try {
+            restTemplate.delete(url);
+            log.info("Запит на видалення моделі {} надіслано", modelId);
+        } catch (Exception e) {
+            log.error("Не вдалося видалити модель з AI сервера: {}", e.getMessage());
+        }
+    }
+
     public AiPredictResponse predictGestureOnAiServer(PredictRequest request) {
         String url = aiServerUrl + "/predict";
-
         log.debug("Відправка жесту на розпізнавання для моделі: {}", request.getModelId());
 
         try {
@@ -55,7 +73,6 @@ public class AiClientService {
             } else {
                 throw new RuntimeException("AI сервер повернув порожню відповідь");
             }
-
         } catch (Exception e) {
             log.error("Помилка розпізнавання на AI сервері: {}", e.getMessage());
             throw new RuntimeException("Помилка розпізнавання жесту", e);

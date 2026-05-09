@@ -21,10 +21,7 @@ public class PredictController {
 
     @PostMapping("/init/{modelId}")
     public ResponseEntity<Map<String, String>> initPredict(@PathVariable String modelId) {
-
-        AiInitRequest request = gestureModelService.prepareInitRequest(modelId);
-
-        aiClientService.initModelOnAiServer(request);
+        gestureModelService.initModelForPrediction(modelId);
 
         return ResponseEntity.ok(Map.of(
                 "status", "SUCCESS",
@@ -37,5 +34,16 @@ public class PredictController {
         gestureModelService.getModelById(request.getModelId());
         AiPredictResponse result = aiClientService.predictGestureOnAiServer(request);
         return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/unload/{modelId}")
+    public ResponseEntity<Map<String, String>> unloadPredict(@PathVariable String modelId) {
+
+        aiClientService.deleteModelFromAiServer(modelId);
+
+        return ResponseEntity.ok(Map.of(
+                "status", "SUCCESS",
+                "message", "Модель успішно вивантажена з пам'яті ШІ-сервера."
+        ));
     }
 }

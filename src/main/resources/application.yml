@@ -3,7 +3,7 @@ spring:
     name: smartglove-backend
 
   mongodb:
-    uri: mongodb://admin:secretpassword@localhost:27017/smartglove?authSource=admin
+    uri: mongodb://admin:secretpassword@localhost:27018/smartglove?authSource=admin
 
   rabbitmq:
     host: localhost

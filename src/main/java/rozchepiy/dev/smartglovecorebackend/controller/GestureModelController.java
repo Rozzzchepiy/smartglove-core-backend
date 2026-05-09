@@ -49,4 +49,9 @@ public class GestureModelController {
         return ResponseEntity.ok(models);
     }
 
+    @DeleteMapping("/{modelId}")
+    public ResponseEntity<Void> deleteModel(@PathVariable String modelId, Principal principal) {
+        gestureModelService.deleteModel(modelId, principal.getName());
+        return ResponseEntity.noContent().build();
+    }
 }

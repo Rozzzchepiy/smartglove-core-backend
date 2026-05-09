@@ -11,7 +11,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TrainTaskMessage {
-    private String taskId;
     private String modelId;
-    private String userId;
 }

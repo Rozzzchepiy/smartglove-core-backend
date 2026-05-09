@@ -8,7 +8,7 @@ import java.util.List;
 
 @Repository
 public interface GestureModelRepository  extends MongoRepository<GestureModel,String> {
-    List<GestureModel> findAllByUserId(String userId);
+    List<GestureModel> findByUserIdOrIsDefaultTrue(String userId);
 
     List<GestureModel> findAllByIsDefaultTrue();
 }

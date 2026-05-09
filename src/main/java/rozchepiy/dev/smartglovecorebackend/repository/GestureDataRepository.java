@@ -18,4 +18,6 @@ public interface GestureDataRepository extends MongoRepository<GestureData,Strin
             "{ '$project': { 'label': '$_id', 'count': 1, '_id': 0 } }"
     })
     List<GestureSummaryDto> getGestureSummariesByModelId(String modelId);
+
+    void deleteAllByModelId(String modelId);
 }

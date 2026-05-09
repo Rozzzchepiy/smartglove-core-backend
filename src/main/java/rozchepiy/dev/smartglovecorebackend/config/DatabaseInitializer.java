@@ -33,7 +33,7 @@ public class DatabaseInitializer implements CommandLineRunner {
     @Value("${minio.bucket.name}")
     private String bucketName;
 
-    public static final String DEFAULT_MODEL_ID = "DEFAULT_SYSTEM_MODEL";
+    public static final String DEFAULT_MODEL_ID = "default";
 
     @Override
     public void run(String... args) {
@@ -56,11 +56,11 @@ public class DatabaseInitializer implements CommandLineRunner {
                 .id(DEFAULT_MODEL_ID)
                 .name("Базова модель (System)")
                 .isDefault(true)
-                .includesDefaultGestures(false) // Сама в собі нічого не інклюдить
+                .includesDefaultGestures(false)
                 .status(ModelStatus.READY)
-                .s3PathToKeras("models/default_model.keras")
-                .s3PathToScaler("models/default_scaler.pkl")
-                .s3PathToLabels("models/default_labels.npy")
+                .s3PathToKeras("model_default.keras")
+                .s3PathToScaler("scaler_default.pkl")
+                .s3PathToLabels("labels_default.npy")
                 .build();
 
         gestureModelRepository.save(defaultModel);
@@ -100,9 +100,9 @@ public class DatabaseInitializer implements CommandLineRunner {
 
     private void seedMinioFiles() {
         log.info("Крок 3: Завантаження фізичних файлів ваг у MinIO...");
-        uploadToMinio("models/default_model.keras", "data/weights/default_model.keras");
-        uploadToMinio("models/default_scaler.pkl", "data/weights/default_scaler.pkl");
-        uploadToMinio("models/default_labels.npy", "data/weights/default_labels.npy");
+        uploadToMinio("model_default.keras", "data/weights/default_model.keras");
+        uploadToMinio("scaler_default.pkl", "data/weights/default_scaler.pkl");
+        uploadToMinio("labels_default.npy", "data/weights/default_labels.npy");
     }
 
     private void uploadToMinio(String s3Path, String resourcePath) {

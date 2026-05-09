@@ -1,5 +1,6 @@
 package rozchepiy.dev.smartglovecorebackend.service;
 
+import lombok.extern.slf4j.Slf4j;
 import rozchepiy.dev.smartglovecorebackend.config.RabbitMQConfig;
 import rozchepiy.dev.smartglovecorebackend.dto.message.TrainResultMessage;
 import rozchepiy.dev.smartglovecorebackend.model.GestureModel;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class RabbitMQConsumer {
@@ -17,17 +19,21 @@ public class RabbitMQConsumer {
 
     @RabbitListener(queues = RabbitMQConfig.TRAIN_RESULTS_QUEUE)
     public void receiveTrainResult(TrainResultMessage result) {
+        log.info("Отримано повідомлення з черги про завершення тренування моделі {}. Статус: {}",
+                result.getModelId(), result.getStatus());
 
         gestureModelRepository.findById(result.getModelId()).ifPresent(model -> {
 
             if ("SUCCESS".equalsIgnoreCase(result.getStatus())) {
                 model.setStatus(ModelStatus.READY);
-                model.setS3PathToKeras(result.getS3KerasPath());
-                model.setS3PathToScaler(result.getS3ScalerPath());
-                model.setS3PathToLabels(result.getS3LabelsPath());
+                model.setS3PathToKeras("model_" + model.getId() + ".keras");
+                model.setS3PathToScaler("scaler_" + model.getId() + ".pkl");
+                model.setS3PathToLabels("labels_" + model.getId() + ".npy");
+                log.info("Модель {} успішно оновлена в БД і готова до використання.", model.getId());
             }
             else {
                 model.setStatus(ModelStatus.FAILED);
+                log.warn("Модель {} отримала статус FAILED від ШІ-сервера.", model.getId());
             }
 
             gestureModelRepository.save(model);

@@ -26,7 +26,7 @@ public class GestureDataService {
     private final GestureModelRepository gestureModelRepository;
     private final GestureModelService gestureModelService;
 
-    private static final String DEFAULT_MODEL_ID = "DEFAULT_SYSTEM_MODEL";
+    private static final String DEFAULT_MODEL_ID = "default";
 
     public GestureData saveGestureData(String modelId, SaveGestureRequest request) {
 
