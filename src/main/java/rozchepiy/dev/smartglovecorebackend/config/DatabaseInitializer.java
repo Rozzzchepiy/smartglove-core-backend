@@ -30,7 +30,7 @@ public class DatabaseInitializer implements CommandLineRunner {
     private final GestureDataRepository gestureDataRepository;
     private final MinioClient minioClient; // Клієнт для роботи з S3 сховищем
 
-    @Value("${minio.bucket.name}")
+    @Value("${minio.bucket-name}")
     private String bucketName;
 
     public static final String DEFAULT_MODEL_ID = "default";
