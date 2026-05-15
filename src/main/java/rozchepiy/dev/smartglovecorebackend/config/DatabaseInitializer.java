@@ -2,6 +2,8 @@ package rozchepiy.dev.smartglovecorebackend.config;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.minio.BucketExistsArgs;
+import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +30,7 @@ public class DatabaseInitializer implements CommandLineRunner {
 
     private final GestureModelRepository gestureModelRepository;
     private final GestureDataRepository gestureDataRepository;
-    private final MinioClient minioClient; // Клієнт для роботи з S3 сховищем
+    private final MinioClient minioClient;
 
     @Value("${minio.bucket-name}")
     private String bucketName;
@@ -40,13 +42,33 @@ public class DatabaseInitializer implements CommandLineRunner {
         if (!gestureModelRepository.existsById(DEFAULT_MODEL_ID)) {
             log.info("Розпочинаю повну ініціалізацію системи (Cold Start)...");
 
-            initDefaultModelRecord();
-            seedDefaultGestures();
-            seedMinioFiles();
+            try {
+                ensureBucketExists();
 
-            log.info("Ініціалізація системи успішно завершена!");
+                initDefaultModelRecord();
+                seedDefaultGestures();
+
+                seedMinioFiles();
+
+                log.info("Ініціалізація системи успішно завершена! 🚀");
+            } catch (Exception e) {
+                log.error("❌ Критична помилка під час ініціалізації! Відкочуємо зміни...", e);
+
+                gestureModelRepository.deleteById(DEFAULT_MODEL_ID);
+                gestureDataRepository.deleteAllByModelId(DEFAULT_MODEL_ID);
+            }
         } else {
             log.info("Дефолтна модель та дані вже присутні. Ініціалізація пропущена (Hot Start).");
+        }
+    }
+
+    private void ensureBucketExists() throws Exception {
+        boolean isExist = minioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
+        if (!isExist) {
+            minioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
+            log.info("Бакет '{}' успішно створено в MinIO.", bucketName);
+        } else {
+            log.info("Бакет '{}' вже існує.", bucketName);
         }
     }
 
@@ -66,57 +88,50 @@ public class DatabaseInitializer implements CommandLineRunner {
         gestureModelRepository.save(defaultModel);
     }
 
-    private void seedDefaultGestures() {
+    private void seedDefaultGestures() throws Exception {
         log.info("Крок 2: Завантаження дефолтних жестів з JSON файлу...");
-        try {
-            InputStream inputStream = new ClassPathResource("data/default_gestures.json").getInputStream();
+        InputStream inputStream = new ClassPathResource("data/default_gestures.json").getInputStream();
+        ObjectMapper objectMapper = new ObjectMapper();
 
-            ObjectMapper objectMapper = new ObjectMapper();
+        TypeReference<Map<String, List<List<List<Double>>>>> typeReference = new TypeReference<>() {};
+        Map<String, List<List<List<Double>>>> jsonMap = objectMapper.readValue(inputStream, typeReference);
 
-            TypeReference<Map<String, List<List<List<Double>>>>> typeReference = new TypeReference<>() {};
-            Map<String, List<List<List<Double>>>> jsonMap = objectMapper.readValue(inputStream, typeReference);
+        List<GestureData> dataToSave = new ArrayList<>();
 
-            List<GestureData> dataToSave = new ArrayList<>();
-
-            for (Map.Entry<String, List<List<List<Double>>>> entry : jsonMap.entrySet()) {
-                String label = entry.getKey();
-                for (List<List<Double>> rawDataInstance : entry.getValue()) {
-                    GestureData gestureData = GestureData.builder()
-                            .modelId(DEFAULT_MODEL_ID)
-                            .label(label)
-                            .rawData(rawDataInstance)
-                            .build();
-                    dataToSave.add(gestureData);
-                }
+        for (Map.Entry<String, List<List<List<Double>>>> entry : jsonMap.entrySet()) {
+            String label = entry.getKey();
+            for (List<List<Double>> rawDataInstance : entry.getValue()) {
+                GestureData gestureData = GestureData.builder()
+                        .modelId(DEFAULT_MODEL_ID)
+                        .label(label)
+                        .rawData(rawDataInstance)
+                        .build();
+                dataToSave.add(gestureData);
             }
-
-            gestureDataRepository.saveAll(dataToSave);
-            log.info("Успішно завантажено {} екземплярів жестів у БД.", dataToSave.size());
-
-        } catch (Exception e) {
-            log.error("Помилка парсингу default_gestures.json. Переконайся, що файл лежить у src/main/resources/data/", e);
         }
+
+        gestureDataRepository.saveAll(dataToSave);
+        log.info("Успішно завантажено {} екземплярів жестів у БД.", dataToSave.size());
     }
 
-    private void seedMinioFiles() {
+    private void seedMinioFiles() throws Exception {
         log.info("Крок 3: Завантаження фізичних файлів ваг у MinIO...");
         uploadToMinio("model_default.keras", "data/weights/default_model.keras");
         uploadToMinio("scaler_default.pkl", "data/weights/default_scaler.pkl");
         uploadToMinio("labels_default.npy", "data/weights/default_labels.npy");
     }
 
-    private void uploadToMinio(String s3Path, String resourcePath) {
+    private void uploadToMinio(String s3Path, String resourcePath) throws Exception {
         try (InputStream is = new ClassPathResource(resourcePath).getInputStream()) {
+            long size = is.available();
             minioClient.putObject(
                     PutObjectArgs.builder()
                             .bucket(bucketName)
                             .object(s3Path)
-                            .stream(is, is.available(), -1)
+                            .stream(is, size, -1)
                             .build()
             );
-            log.info("Файл {} успішно завантажено в MinIO.", s3Path);
-        } catch (Exception e) {
-            log.error("Помилка завантаження файлу {} у MinIO. Переконайся, що він є у папці resources.", resourcePath, e);
+            log.info("Файл {} успішно завантажено в MinIO ({} bytes).", s3Path, size);
         }
     }
 }
