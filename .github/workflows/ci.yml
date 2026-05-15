@@ -7,7 +7,7 @@ on:
     branches: [ "main", "master" ]
 
 jobs:
-  build-and-test:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Отримання коду з репозиторію
@@ -22,13 +22,6 @@ jobs:
 
       - name: Запуск тестів та збірка проєкту (Maven)
         run: mvn clean package
-
-  build-and-push-docker:
-    needs: build-and-test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Отримання коду з репозиторію
-        uses: actions/checkout@v4
 
       - name: Авторизація в Docker Hub
         uses: docker/login-action@v3
